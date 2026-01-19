@@ -28,8 +28,10 @@ package io.github.qwzhang01.dsecurity.kit;
 
 import io.github.qwzhang01.dsecurity.domain.AnnotatedField;
 import io.github.qwzhang01.dsecurity.exception.DataSecurityException;
+import io.github.qwzhang01.dsecurity.exception.SerializationException;
 import org.springframework.util.StringUtils;
 
+import java.io.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -481,5 +483,35 @@ public final class ClazzUtil {
     private static boolean isGenerics(Class<?> clazz) {
         TypeVariable<?>[] typeParameters = clazz.getTypeParameters();
         return typeParameters.length > 0;
+    }
+
+    public static <T> T clone(T obj) {
+        if (obj == null) {
+            return null;
+        }
+
+        byte[] bytes = serialize(obj);           // 先序列化成 byte[]
+        return deserialize(bytes);               // 再立刻反序列化回物件
+    }
+
+    private static byte[] serialize(Object obj) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(512);
+        try (ObjectOutputStream out = new ObjectOutputStream(baos)) {
+            out.writeObject(obj);
+            return baos.toByteArray();
+        } catch (IOException ex) {
+            throw new SerializationException("Failed to serialize object", ex);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T deserialize(byte[] data) {
+        ByteArrayInputStream bais = new ByteArrayInputStream(data);
+        try (ObjectInputStream in = new ObjectInputStream(bais)) {
+            return (T) in.readObject();
+        } catch (IOException | ClassNotFoundException ex) {
+            throw new SerializationException("Failed to deserialize object",
+                    ex);
+        }
     }
 }

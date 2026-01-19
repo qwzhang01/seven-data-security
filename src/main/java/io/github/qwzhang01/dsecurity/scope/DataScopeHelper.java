@@ -2,6 +2,7 @@ package io.github.qwzhang01.dsecurity.scope;
 
 
 import com.baomidou.mybatisplus.core.exceptions.MybatisPlusException;
+import io.github.qwzhang01.dsecurity.kit.ClazzUtil;
 import io.github.qwzhang01.dsecurity.kit.SpringContextUtil;
 import io.github.qwzhang01.dsecurity.scope.container.DataScopeStrategyContainer;
 
@@ -255,17 +256,18 @@ public class DataScopeHelper {
             typedObj.validDs(this.validRights);
             typedObj.validDs(this.validRights, this.withoutRights);
 
+            RuntimeException exception = null;
             try {
                 R call = function.call();
-
                 if (call == null && this.scopeException != null) {
-                    throw this.scopeException;
+                    exception = ClazzUtil.clone(this.scopeException);
+                    throw exception;
                 }
 
                 return call;
             } catch (Exception e) {
-                if (e.equals(this.scopeException)) {
-                    throw this.scopeException;
+                if (exception != null) {
+                    throw exception;
                 }
                 throw new MybatisPlusException(e);
             } finally {
