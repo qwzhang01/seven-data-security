@@ -5,7 +5,7 @@ import io.github.qwzhang01.dsecurity.domain.AnnotatedField;
 import io.github.qwzhang01.dsecurity.encrypt.annotation.EncryptField;
 import io.github.qwzhang01.dsecurity.encrypt.container.AbstractEncryptAlgoContainer;
 import io.github.qwzhang01.dsecurity.encrypt.shield.EncryptionAlgo;
-import io.github.qwzhang01.dsecurity.exception.DesensitizeException;
+import io.github.qwzhang01.dsecurity.exception.DataSecurityException;
 import io.github.qwzhang01.dsecurity.kit.ClazzUtil;
 import io.github.qwzhang01.dsecurity.kit.SpringContextUtil;
 import org.slf4j.Logger;
@@ -18,7 +18,8 @@ import java.util.List;
  * Decryption processor for automatic field decryption.
  *
  * <p>This processor handles automatic decryption of encrypted fields in query
- * results. It uses reflection to find fields annotated with {@link EncryptField}
+ * results. It uses reflection to find fields annotated with
+ * {@link EncryptField}
  * and applies the configured decryption algorithm.</p>
  *
  * <p><strong>Features:</strong></p>
@@ -89,7 +90,7 @@ public class DecryptProcessor {
      * annotation.</p>
      *
      * @param fields the list of annotated field results to decrypt
-     * @throws DesensitizeException if decryption fails
+     * @throws DataSecurityException if decryption fails
      */
     private void decryptFields(List<AnnotatedField<EncryptField>> fields) {
         if (fields.isEmpty()) {
@@ -102,7 +103,7 @@ public class DecryptProcessor {
         if (container == null) {
             log.error("Encryption algorithm container not found in Spring " +
                     "context");
-            throw new DesensitizeException("Encryption algorithm container " +
+            throw new DataSecurityException("Encryption algorithm container " +
                     "not available");
         }
 
@@ -113,10 +114,10 @@ public class DecryptProcessor {
                 decryptSingleField(fieldResult, container);
             }
         } catch (IllegalAccessException e) {
-            throw new DesensitizeException("Failed to decrypt fields due to " +
+            throw new DataSecurityException("Failed to decrypt fields due to " +
                     "access error", e);
         } catch (Exception e) {
-            throw new DesensitizeException("Failed to decrypt fields", e);
+            throw new DataSecurityException("Failed to decrypt fields", e);
         }
     }
 

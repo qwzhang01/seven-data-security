@@ -11,9 +11,11 @@ import org.springframework.context.annotation.Configuration;
 /**
  * Jackson ObjectMapper configuration for the desensitization library.
  *
- * <p>This configuration class sets up Jackson JSON processing with support for:</p>
+ * <p>This configuration class sets up Jackson JSON processing with support
+ * for:</p>
  * <ul>
- *   <li>Enhanced ObjectMapper with Encrypt type serialization/deserialization</li>
+ *   <li>Enhanced ObjectMapper with Encrypt type
+ *   serialization/deserialization</li>
  *   <li>Java 8 date/time types (LocalDateTime, LocalDate, etc.)</li>
  *   <li>Human-readable date formatting instead of timestamps</li>
  * </ul>
@@ -23,10 +25,12 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class JacksonConfig {
-    
+
     /**
-     * Creates an ObjectMapperEnhancer bean that configures Encrypt type handling.
-     * This enhancer automatically registers custom serializers and deserializers
+     * Creates an ObjectMapperEnhancer bean that configures Encrypt type
+     * handling.
+     * This enhancer automatically registers custom serializers and
+     * deserializers
      * for the Encrypt type when the Spring context is refreshed.
      *
      * @return the ObjectMapperEnhancer instance
@@ -37,13 +41,15 @@ public class JacksonConfig {
     }
 
     /**
-     * Creates a default ObjectMapper bean only if no other ObjectMapper is defined.
+     * Creates a default ObjectMapper bean only if no other ObjectMapper is
+     * defined.
      * This prevents conflicts with user-defined ObjectMapper configurations.
      *
      * <p>The default configuration includes:</p>
      * <ul>
      *   <li>JavaTimeModule for Java 8 date/time support</li>
-     *   <li>Disabled timestamp serialization for dates (uses ISO-8601 format instead)</li>
+     *   <li>Disabled timestamp serialization for dates (uses ISO-8601 format
+     *   instead)</li>
      * </ul>
      *
      * @return a configured ObjectMapper instance

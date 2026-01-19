@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * 改进版 SQL 打印工具类
  * 修复了原版的多项问题，提升了健壮性、准确性和可维护性
- * 
+ *
  * <p>主要修复：</p>
  * <ul>
  *   <li>修复参数值包含 $、${...} 等特殊字符导致的正则引用错误</li>
@@ -29,7 +29,7 @@ import java.util.List;
  *   <li>优化了字符串转义逻辑，支持反斜杠转义</li>
  *   <li>改进了空白字符处理，避免破坏字符串字面量</li>
  * </ul>
- * 
+ *
  * @author avinzhang
  */
 public class SqlPrint {
@@ -119,7 +119,7 @@ public class SqlPrint {
         int placeholderCount = countChar(sql, '?');
         if (placeholderCount != parameters.size()) {
             log.warn("SQL 占位符数量({}) 与参数数量({}) 不匹配: 占位符={}, 参数={}",
-                    placeholderCount, parameters.size(), 
+                    placeholderCount, parameters.size(),
                     placeholderCount, parameters.size());
         }
 
@@ -129,7 +129,7 @@ public class SqlPrint {
 
     /**
      * 格式化参数值为 SQL 字面量
-     * 
+     *
      * @param value 参数值
      * @return SQL 字面量字符串
      */
@@ -191,7 +191,7 @@ public class SqlPrint {
         }
         StringBuilder result = new StringBuilder(sql.length());
         boolean lastWasWhitespace = false;
-        
+
         for (int i = 0; i < sql.length(); i++) {
             char c = sql.charAt(i);
             if (Character.isWhitespace(c)) {
@@ -204,7 +204,7 @@ public class SqlPrint {
                 lastWasWhitespace = false;
             }
         }
-        
+
         return result.toString().trim();
     }
 
@@ -213,10 +213,11 @@ public class SqlPrint {
      * 使用 StringBuilder 手动替换，避免正则表达式的特殊字符问题
      */
     private String replacePlaceholders(String sql, List<String> parameters) {
-        StringBuilder result = new StringBuilder(sql.length() + parameters.size() * 20);
+        StringBuilder result =
+                new StringBuilder(sql.length() + parameters.size() * 20);
         int sqlIndex = 0;
         int paramIndex = 0;
-        
+
         while (sqlIndex < sql.length() && paramIndex < parameters.size()) {
             int placeholderPos = sql.indexOf('?', sqlIndex);
             if (placeholderPos == -1) {
@@ -224,21 +225,21 @@ public class SqlPrint {
                 result.append(sql.substring(sqlIndex));
                 break;
             }
-            
+
             // 添加占位符前的内容
             result.append(sql, sqlIndex, placeholderPos);
             // 添加参数值
             result.append(parameters.get(paramIndex));
-            
+
             sqlIndex = placeholderPos + 1;
             paramIndex++;
         }
-        
+
         // 添加剩余 SQL（如果有）
         if (sqlIndex < sql.length()) {
             result.append(sql.substring(sqlIndex));
         }
-        
+
         return result.toString();
     }
 

@@ -6,7 +6,7 @@ package io.github.qwzhang01.dsecurity.exception;
  *
  * @author avinzhang
  */
-public class JacksonException extends DesensitizeException {
+public class JacksonException extends DataSecurityException {
     private String json;
     private Class<?> clazz;
 

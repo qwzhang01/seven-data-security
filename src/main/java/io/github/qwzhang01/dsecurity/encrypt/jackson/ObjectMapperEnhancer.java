@@ -88,7 +88,8 @@ public class ObjectMapperEnhancer implements ApplicationListener<ContextRefreshe
                         if (JsonToken.VALUE_NULL == currentToken) {
                             return null;
                         }
-                        throw new JacksonException("JSON deserialization error", "",
+                        throw new JacksonException("JSON deserialization " +
+                                "error", "",
                                 Encrypt.class);
                     }
                 });

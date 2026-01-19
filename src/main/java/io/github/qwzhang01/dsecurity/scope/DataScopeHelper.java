@@ -13,7 +13,8 @@ import java.util.concurrent.Callable;
  * Data scope helper for fine-grained data access control.
  *
  * <p>This utility provides thread-local storage for data scope context,
- * enabling row-level data filtering based on user permissions or business rules.</p>
+ * enabling row-level data filtering based on user permissions or business
+ * rules.</p>
  *
  * <p><strong>Features:</strong></p>
  * <ul>

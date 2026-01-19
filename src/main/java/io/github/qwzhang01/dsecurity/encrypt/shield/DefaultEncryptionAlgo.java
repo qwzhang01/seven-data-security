@@ -26,7 +26,7 @@
 
 package io.github.qwzhang01.dsecurity.encrypt.shield;
 
-import io.github.qwzhang01.dsecurity.exception.DesensitizeException;
+import io.github.qwzhang01.dsecurity.exception.DataSecurityException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -164,7 +164,7 @@ public class DefaultEncryptionAlgo implements EncryptionAlgo {
          */
         public static String encrypt(String password, String data) {
             if (password == null || password.length() < 8) {
-                throw new DesensitizeException("Encryption failed: key must " +
+                throw new DataSecurityException("Encryption failed: key must " +
                         "be at least 8 characters long");
             }
             if (data == null) {
@@ -207,7 +207,7 @@ public class DefaultEncryptionAlgo implements EncryptionAlgo {
          */
         public static String decrypt(String password, String data) {
             if (password == null || password.length() < 8) {
-                throw new DesensitizeException("Decryption failed: key must " +
+                throw new DataSecurityException("Decryption failed: key must " +
                         "be at least 8 characters long");
             }
             if (data == null) {

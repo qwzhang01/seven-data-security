@@ -25,7 +25,8 @@ import static io.github.qwzhang01.dsecurity.kit.StringUtil.clearSqlTip;
  * <ul>
  *   <li>Lazy initialization with double-checked locking</li>
  *   <li>Thread-safe caching with ConcurrentHashMap</li>
- *   <li>Support for custom table and field names via MyBatis-Plus annotations</li>
+ *   <li>Support for custom table and field names via MyBatis-Plus
+ *   annotations</li>
  *   <li>Fast lookup by table:column key</li>
  * </ul>
  *

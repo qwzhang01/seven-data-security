@@ -13,14 +13,17 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ParserTest {
+    private static final Pattern p = Pattern.compile("#\\{([^}]*)\\}");
+
     @Test
     public void test() throws JSQLParserException {
-        String sql = "SELECT  id,questionId,`input`,`output`,createTime,createBy,updateTime,updateBy,enableFlag  FROM `use_case`  WHERE `enableFlag`=true     AND (`questionId` IN (?,?,?,?,?,?))";
+        String sql = "SELECT  id,questionId,`input`,`output`,createTime," +
+                "createBy,updateTime,updateBy,enableFlag  FROM `use_case`  " +
+                "WHERE `enableFlag`=true     AND (`questionId` IN (?,?,?,?,?," +
+                "?))";
         Statement statement = CCJSqlParserUtil.parse(sql);
         System.out.println(statement);
     }
-
-    private static final Pattern p = Pattern.compile("#\\{([^}]*)\\}");
 
     @Test
     public void test1() throws JSQLParserException {
@@ -40,7 +43,6 @@ public class ParserTest {
         System.out.println(sql);
 
         Statement statement = CCJSqlParserUtil.parse(sql);
-
 
 
         System.out.println(statement);

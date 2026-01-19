@@ -4,6 +4,7 @@
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.qwzhang01/seven-data-security.svg)](https://search.maven.org/artifact/io.github.qwzhang01/seven-data-security)
 [![Java Version](https://img.shields.io/badge/Java-17%2B-green.svg)](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.1.5-brightgreen.svg)](https://spring.io/projects/spring-boot)
+[![MyBatis-Plus](https://img.shields.io/badge/MyBatis--Plus-3.5.11-blue.svg)](https://baomidou.com/)
 
 [English Documentation](README.md)
 
@@ -17,6 +18,7 @@
 - [核心功能](#核心功能)
   - [字段加密](#字段加密)
   - [查询参数加密](#查询参数加密)
+  - [单表查询处理](#单表查询处理)
   - [数据权限控制](#数据权限控制)
   - [SQL打印](#sql打印)
 - [配置说明](#配置说明)
@@ -51,6 +53,11 @@
 - **执行时间追踪** - 性能监控
 - **环境感知** - 生产环境自动禁用
 
+### 🔄 SQL 处理
+- **单表查询优化** - 自动添加表前缀
+- **SQL 重写** - 数据权限条件注入
+- **智能列检测** - 自动识别和处理列名
+
 ### 🏗️ 企业级设计
 - **线程安全** - ThreadLocal 上下文管理
 - **懒加载与缓存** - 优化性能
@@ -68,14 +75,17 @@ seven-data-security
 ├── domain                  # 核心领域模型
 │   ├── AnnotatedField             # 字段注解元数据
 │   ├── Encrypt                    # 加密包装类型
-│   ├── ParameterEncryptInfo       # 参数加密上下文
-│   └── ParameterRestoreInfo       # 参数还原上下文
+│   ├── EncryptInfo                # 参数加密上下文
+│   └── RestoreInfo                # 参数还原上下文
 ├── encrypt                 # 加密子系统
 │   ├── annotation                 # @EncryptField 注解
 │   ├── container                  # 算法和元数据容器
 │   ├── context                    # 加密上下文管理
 │   ├── jackson                    # JSON序列化支持
 │   ├── processor                  # 加解密处理器
+│   │   ├── DecryptProcessor       # 结果解密
+│   │   ├── EncryptProcessor       # 参数加密
+│   │   └── SingleSelectProcessor  # 单表SELECT优化
 │   ├── shield                     # 加密算法实现
 │   └── type/handler               # MyBatis 类型处理器
 ├── interceptor             # MyBatis 拦截器
@@ -92,10 +102,11 @@ seven-data-security
 ├── scope                   # 数据权限子系统
 │   ├── DataScopeHelper            # 权限上下文管理
 │   ├── DataScopeStrategy          # 策略接口
+│   ├── EmptyDataScopeStrategy     # 空策略实现
 │   ├── container                  # 策略容器
 │   └── processor                  # SQL重写处理器
 └── exception               # 异常体系
-    ├── DesensitizeException       # 基础异常
+    ├── DataSecurityException      # 基础异常
     └── JacksonException           # JSON相关异常
 ```
 
@@ -108,13 +119,13 @@ seven-data-security
 <dependency>
     <groupId>io.github.qwzhang01</groupId>
     <artifactId>seven-data-security</artifactId>
-    <version>1.2.17</version>
+    <version>1.2.21</version>
 </dependency>
 ```
 
 **Gradle:**
 ```gradle
-implementation 'io.github.qwzhang01:seven-data-security:1.2.17'
+implementation 'io.github.qwzhang01:seven-data-security:1.2.21'
 ```
 
 ### 2. 定义加密实体
@@ -295,6 +306,30 @@ public class UserService {
     <!-- phoneNumber 在执行前自动加密 -->
 </select>
 ```
+
+### 单表查询处理
+
+库会自动为单表 SELECT 查询的列添加表前缀,这有助于在使用数据权限 SQL 重写时防止列名冲突:
+
+```java
+// 原始查询
+String sql = "SELECT id, name FROM user WHERE status = 1";
+
+// 处理后
+String processedSql = "SELECT user.id, user.name FROM user WHERE user.status = 1";
+```
+
+**功能特性:**
+- ✅ 自动检测单表 SELECT 查询
+- ✅ 为 SELECT 列、WHERE 条件、ORDER BY、GROUP BY、HAVING 添加表前缀
+- ✅ 处理 `SELECT *` → `SELECT table.*` 转换
+- ✅ 支持表别名
+- ✅ 跳过包含 JOIN 的查询(非单表)
+
+**使用场景:**
+- 防止数据权限添加 JOIN 子句时出现歧义列名
+- 提升复杂查询重写的 SQL 兼容性
+- 确保不同查询类型间的列引用一致性
 
 ### 数据权限控制
 

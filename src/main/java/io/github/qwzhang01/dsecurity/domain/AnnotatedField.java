@@ -1,6 +1,6 @@
 package io.github.qwzhang01.dsecurity.domain;
 
-import io.github.qwzhang01.dsecurity.exception.DesensitizeException;
+import io.github.qwzhang01.dsecurity.exception.DataSecurityException;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -28,19 +28,7 @@ public record AnnotatedField<T extends Annotation>(
             field.setAccessible(true);
             return field.get(obj);
         } catch (IllegalAccessException e) {
-            throw new DesensitizeException("Cannot access field value: " + field.getName(), e);
-        }
-    }
-
-    /**
-     * Set the field value safely
-     */
-    public void setFieldValue(Object value) {
-        try {
-            field.setAccessible(true);
-            field.set(obj, value);
-        } catch (IllegalAccessException e) {
-            throw new DesensitizeException("Cannot set field value: " + field.getName(), e);
+            throw new DataSecurityException("Cannot access field value: " + field.getName(), e);
         }
     }
 

@@ -1,6 +1,6 @@
 package io.github.qwzhang01.dsecurity.encrypt.context;
 
-import io.github.qwzhang01.dsecurity.domain.ParameterRestoreInfo;
+import io.github.qwzhang01.dsecurity.domain.RestoreInfo;
 import io.github.qwzhang01.dsecurity.kit.ParamUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,9 +29,10 @@ public class SqlRewriteContext {
     private static final Logger log =
             LoggerFactory.getLogger(SqlRewriteContext.class);
     // ThreadLocal for storing original parameter values (ensures thread safety)
-    private static final ThreadLocal<List<ParameterRestoreInfo>> RESTORE_INFO_HOLDER = new ThreadLocal<>();
+    private static final ThreadLocal<List<RestoreInfo>> RESTORE_INFO_HOLDER =
+            new ThreadLocal<>();
 
-    public static void cache(List<ParameterRestoreInfo> restoreInfos) {
+    public static void cache(List<RestoreInfo> restoreInfos) {
         if (restoreInfos != null && !restoreInfos.isEmpty()) {
             RESTORE_INFO_HOLDER.set(restoreInfos);
         }

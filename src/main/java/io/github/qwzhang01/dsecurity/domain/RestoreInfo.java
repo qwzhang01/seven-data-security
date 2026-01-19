@@ -1,31 +1,29 @@
 package io.github.qwzhang01.dsecurity.domain;
 
-import io.github.qwzhang01.dsecurity.encrypt.shield.EncryptionAlgo;
 import org.apache.ibatis.reflection.MetaObject;
 
 import java.util.Map;
 
 /**
- * Parameter encryption information holder.
+ * Parameter restoration information holder.
  *
- * <p>This class encapsulates all information needed to encrypt a parameter value,
- * including the table/field metadata, original value, encryption algorithm,
- * and parameter location information for restoration.</p>
+ * <p>This class stores information needed to restore parameter values to their
+ * original state after SQL execution. It works in conjunction with
+ * {@link EncryptInfo} to ensure parameters are encrypted only during
+ * SQL execution and restored afterward.</p>
  *
- * <p>It supports three types of parameter sources:</p>
+ * <p>The restoration process supports the same three parameter types:</p>
  * <ul>
- *   <li>Map parameters (typical MyBatis parameter maps)</li>
- *   <li>Object parameters (entity objects)</li>
- *   <li>QueryWrapper parameters (MyBatis-Plus wrapper objects)</li>
+ *   <li>Map parameters</li>
+ *   <li>Object parameters</li>
+ *   <li>QueryWrapper parameters</li>
  * </ul>
  *
  * @author avinzhang
+ * @see EncryptInfo
  */
-public class ParameterEncryptInfo {
-    private String tableName;
-    private String fieldName;
+public class RestoreInfo {
     private String originalValue;
-    private Class<? extends EncryptionAlgo> algoClass;
 
     // Map parameter fields
     private Map<String, Object> parameterMap;
@@ -41,36 +39,12 @@ public class ParameterEncryptInfo {
     private String queryWrapperParamName;
 
     // Getters and Setters
-    public String getTableName() {
-        return tableName;
-    }
-
-    public void setTableName(String tableName) {
-        this.tableName = tableName;
-    }
-
-    public String getFieldName() {
-        return fieldName;
-    }
-
-    public void setFieldName(String fieldName) {
-        this.fieldName = fieldName;
-    }
-
     public String getOriginalValue() {
         return originalValue;
     }
 
     public void setOriginalValue(String originalValue) {
         this.originalValue = originalValue;
-    }
-
-    public Class<? extends EncryptionAlgo> getAlgoClass() {
-        return algoClass;
-    }
-
-    public void setAlgoClass(Class<? extends EncryptionAlgo> algoClass) {
-        this.algoClass = algoClass;
     }
 
     public Map<String, Object> getParameterMap() {
@@ -89,6 +63,14 @@ public class ParameterEncryptInfo {
         this.parameterKey = parameterKey;
     }
 
+    public MetaObject getMetaObject() {
+        return metaObject;
+    }
+
+    public void setMetaObject(MetaObject metaObject) {
+        this.metaObject = metaObject;
+    }
+
     public Object getTargetObject() {
         return targetObject;
     }
@@ -103,14 +85,6 @@ public class ParameterEncryptInfo {
 
     public void setPropertyName(String propertyName) {
         this.propertyName = propertyName;
-    }
-
-    public MetaObject getMetaObject() {
-        return metaObject;
-    }
-
-    public void setMetaObject(MetaObject metaObject) {
-        this.metaObject = metaObject;
     }
 
     public boolean isQueryWrapperParam() {

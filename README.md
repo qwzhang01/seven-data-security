@@ -4,6 +4,7 @@
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.qwzhang01/seven-data-security.svg)](https://search.maven.org/artifact/io.github.qwzhang01/seven-data-security)
 [![Java Version](https://img.shields.io/badge/Java-17%2B-green.svg)](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.1.5-brightgreen.svg)](https://spring.io/projects/spring-boot)
+[![MyBatis-Plus](https://img.shields.io/badge/MyBatis--Plus-3.5.11-blue.svg)](https://baomidou.com/)
 
 [中文文档](README_ZH.md)
 
@@ -17,6 +18,7 @@
 - [Core Functionality](#core-functionality)
   - [Field Encryption](#field-encryption)
   - [Query Parameter Encryption](#query-parameter-encryption)
+  - [Single Table Query Processing](#single-table-query-processing)
   - [Data Scope Control](#data-scope-control)
   - [SQL Printing](#sql-printing)
 - [Configuration](#configuration)
@@ -51,6 +53,11 @@
 - **Execution time tracking** for performance monitoring
 - **Environment-aware** (disabled in production)
 
+### 🔄 SQL Processing
+- **Single table query optimization** with automatic table prefix
+- **SQL rewriting** for data scope injection
+- **Smart column detection** and processing
+
 ### 🏗️ Enterprise-Grade Design
 - **Thread-safe operations** with ThreadLocal context
 - **Lazy initialization** with caching for performance
@@ -68,14 +75,17 @@ seven-data-security
 ├── domain                  # Core domain models
 │   ├── AnnotatedField             # Field annotation metadata
 │   ├── Encrypt                    # Encryption wrapper type
-│   ├── ParameterEncryptInfo       # Parameter encryption context
-│   └── ParameterRestoreInfo       # Parameter restoration context
+│   ├── EncryptInfo                # Parameter encryption context
+│   └── RestoreInfo                # Parameter restoration context
 ├── encrypt                 # Encryption subsystem
 │   ├── annotation                 # @EncryptField annotation
 │   ├── container                  # Algorithm and metadata containers
 │   ├── context                    # Encryption context management
 │   ├── jackson                    # JSON serialization support
 │   ├── processor                  # Encryption/decryption processors
+│   │   ├── DecryptProcessor       # Result decryption
+│   │   ├── EncryptProcessor       # Parameter encryption
+│   │   └── SingleSelectProcessor  # Single table SELECT optimization
 │   ├── shield                     # Encryption algorithm implementations
 │   └── type/handler               # MyBatis type handler
 ├── interceptor             # MyBatis interceptors
@@ -92,10 +102,11 @@ seven-data-security
 ├── scope                   # Data scope subsystem
 │   ├── DataScopeHelper            # Scope context management
 │   ├── DataScopeStrategy          # Strategy interface
+│   ├── EmptyDataScopeStrategy     # Empty strategy implementation
 │   ├── container                  # Strategy container
 │   └── processor                  # SQL rewriting processor
 └── exception               # Exception hierarchy
-    ├── DesensitizeException       # Base exception
+    ├── DataSecurityException      # Base exception
     └── JacksonException           # JSON-related exception
 ```
 
@@ -108,13 +119,13 @@ seven-data-security
 <dependency>
     <groupId>io.github.qwzhang01</groupId>
     <artifactId>seven-data-security</artifactId>
-    <version>1.2.17</version>
+    <version>1.2.21</version>
 </dependency>
 ```
 
 **Gradle:**
 ```gradle
-implementation 'io.github.qwzhang01:seven-data-security:1.2.17'
+implementation 'io.github.qwzhang01:seven-data-security:1.2.21'
 ```
 
 ### 2. Define Entity with Encryption
@@ -295,6 +306,30 @@ public class UserService {
     <!-- phoneNumber is automatically encrypted before execution -->
 </select>
 ```
+
+### Single Table Query Processing
+
+The library automatically adds table prefix to columns in single-table SELECT queries, which helps prevent column name conflicts when used with data scope SQL rewriting:
+
+```java
+// Original query
+String sql = "SELECT id, name FROM user WHERE status = 1";
+
+// After processing
+String processedSql = "SELECT user.id, user.name FROM user WHERE user.status = 1";
+```
+
+**Features:**
+- ✅ Automatically detects single-table SELECT queries
+- ✅ Adds table prefix to SELECT columns, WHERE conditions, ORDER BY, GROUP BY, HAVING
+- ✅ Handles `SELECT *` → `SELECT table.*` conversion
+- ✅ Respects table aliases
+- ✅ Skips queries with JOIN clauses (not single-table)
+
+**Use Cases:**
+- Prevent ambiguous column names when data scope adds JOIN clauses
+- Improve SQL compatibility with complex query rewrites
+- Ensure consistent column references across different query types
 
 ### Data Scope Control
 

@@ -27,7 +27,7 @@
 package io.github.qwzhang01.dsecurity.kit;
 
 import io.github.qwzhang01.dsecurity.domain.AnnotatedField;
-import io.github.qwzhang01.dsecurity.exception.DesensitizeException;
+import io.github.qwzhang01.dsecurity.exception.DataSecurityException;
 import org.springframework.util.StringUtils;
 
 import java.lang.annotation.Annotation;
@@ -135,7 +135,7 @@ public final class ClazzUtil {
     private static Object getFieldValue(Object obj, String fieldName) throws Exception {
         Field field = findField(obj.getClass(), fieldName);
         if (field == null) {
-            throw new DesensitizeException("Cannot get property: " + fieldName);
+            throw new DataSecurityException("Cannot get property: " + fieldName);
         }
         field.setAccessible(true);
         return field.get(obj);
@@ -148,7 +148,7 @@ public final class ClazzUtil {
                                       Object value) throws Exception {
         Field field = findField(obj.getClass(), fieldName);
         if (field == null) {
-            throw new DesensitizeException("Cannot set property: " + fieldName);
+            throw new DataSecurityException("Cannot set property: " + fieldName);
         }
         field.setAccessible(true);
         field.set(obj, value);

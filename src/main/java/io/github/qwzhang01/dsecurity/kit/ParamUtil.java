@@ -1,11 +1,11 @@
 package io.github.qwzhang01.dsecurity.kit;
 
-import io.github.qwzhang01.dsecurity.domain.ParameterEncryptInfo;
-import io.github.qwzhang01.dsecurity.domain.ParameterRestoreInfo;
+import io.github.qwzhang01.dsecurity.domain.EncryptInfo;
+import io.github.qwzhang01.dsecurity.domain.RestoreInfo;
 import io.github.qwzhang01.dsecurity.encrypt.container.AbstractEncryptAlgoContainer;
 import io.github.qwzhang01.dsecurity.encrypt.context.SqlRewriteContext;
 import io.github.qwzhang01.dsecurity.encrypt.shield.EncryptionAlgo;
-import io.github.qwzhang01.dsecurity.exception.DesensitizeException;
+import io.github.qwzhang01.dsecurity.exception.DataSecurityException;
 import io.github.qwzhang01.sql.tool.helper.ParserHelper;
 import io.github.qwzhang01.sql.tool.model.SqlParam;
 import io.github.qwzhang01.sql.tool.model.SqlTable;
@@ -51,10 +51,10 @@ public final class ParamUtil {
     /**
      * Analyze parameters to determine which need encryption
      */
-    public static List<ParameterEncryptInfo> analyzeParameters(List<ParameterMapping> parameterMappings,
-                                                               List<SqlParam> params,
-                                                               List<SqlTable> tables,
-                                                               Object parameterObject) {
+    public static List<EncryptInfo> analyzeParameters(List<ParameterMapping> parameterMappings,
+                                                      List<SqlParam> params,
+                                                      List<SqlTable> tables,
+                                                      Object parameterObject) {
         if (parameterObject == null) {
             return Collections.emptyList();
         }
@@ -78,8 +78,9 @@ public final class ParamUtil {
     /**
      * Analyze QueryWrapper parameters
      */
-    private static List<ParameterEncryptInfo> analyzeQueryWrapperParameters(Map<String, Object> paramMap,
-                                                                            List<SqlParam> params, List<SqlTable> tables) {
+    private static List<EncryptInfo> analyzeQueryWrapperParameters(Map<String
+            , Object> paramMap,
+                                                                   List<SqlParam> params, List<SqlTable> tables) {
         log.debug("Analyzing QueryWrapper parameters: {}", paramMap.keySet());
 
         Object wrapper = paramMap.get("ew");
@@ -108,7 +109,7 @@ public final class ParamUtil {
             Map<String, String> fieldParamMapping =
                     parseFieldParamMapping(sqlSegment);
 
-            List<ParameterEncryptInfo> encryptInfos = new ArrayList<>();
+            List<EncryptInfo> encryptInfos = new ArrayList<>();
             for (Map.Entry<String, String> entry :
                     fieldParamMapping.entrySet()) {
                 String fieldName = entry.getValue();
@@ -119,7 +120,7 @@ public final class ParamUtil {
                     log.debug("Checking QueryWrapper field: {} -> param: {} =" +
                             " {}", fieldName, paramName, paramValue);
 
-                    ParameterEncryptInfo encryptInfo =
+                    EncryptInfo encryptInfo =
                             FieldMatchUtil.matchParameterToTableField(fieldName, (String) paramValue, params, tables);
                     if (encryptInfo != null) {
                         String parameterKey =
@@ -137,7 +138,7 @@ public final class ParamUtil {
             }
             return encryptInfos;
         } catch (Exception e) {
-            throw new DesensitizeException("Failed to parse QueryWrapper " +
+            throw new DataSecurityException("Failed to parse QueryWrapper " +
                     "parameters: " + e.getMessage(), e);
         }
     }
@@ -145,11 +146,11 @@ public final class ParamUtil {
     /**
      * Analyze Map parameters
      */
-    private static List<ParameterEncryptInfo> analyzeMapParameters(Map<String
+    private static List<EncryptInfo> analyzeMapParameters(Map<String
             , Object> paramMap,
-                                                                   List<ParameterMapping> parameterMappings,
-                                                                   List<SqlParam> params, List<SqlTable> tables) {
-        List<ParameterEncryptInfo> encryptInfos = new ArrayList<>();
+                                                          List<ParameterMapping> parameterMappings,
+                                                          List<SqlParam> params, List<SqlTable> tables) {
+        List<EncryptInfo> encryptInfos = new ArrayList<>();
         log.debug("Analyzing Map parameters: {}", paramMap.keySet());
 
         MetaObject metaObject = SystemMetaObject.forObject(paramMap);
@@ -167,7 +168,7 @@ public final class ParamUtil {
                 if (value instanceof String) {
                     log.debug("Checking parameter: {} = {}", property, value);
 
-                    ParameterEncryptInfo encryptInfo = matchParameterToSqlField(
+                    EncryptInfo encryptInfo = matchParameterToSqlField(
                             property, (String) value, params, tables,
                             parameterMappings);
                     if (encryptInfo != null) {
@@ -192,7 +193,7 @@ public final class ParamUtil {
                         .anyMatch(mapping -> paramName.equals(mapping.getProperty()));
 
                 if (!alreadyProcessed) {
-                    ParameterEncryptInfo encryptInfo =
+                    EncryptInfo encryptInfo =
                             FieldMatchUtil.matchParameterToTableField(
                                     paramName, (String) paramValue, params,
                                     tables);
@@ -214,13 +215,13 @@ public final class ParamUtil {
     /**
      * Analyze object parameters
      */
-    private static List<ParameterEncryptInfo> analyzeObjectParameters(Object parameterObject,
-                                                                      List<ParameterMapping> parameterMappings,
-                                                                      List<SqlParam> sqlAnalysis, List<SqlTable> tables) {
+    private static List<EncryptInfo> analyzeObjectParameters(Object parameterObject,
+                                                             List<ParameterMapping> parameterMappings,
+                                                             List<SqlParam> sqlAnalysis, List<SqlTable> tables) {
         log.debug("Analyzing object parameters: {}",
                 parameterObject.getClass().getSimpleName());
 
-        List<ParameterEncryptInfo> encryptInfos = new ArrayList<>();
+        List<EncryptInfo> encryptInfos = new ArrayList<>();
         for (ParameterMapping mapping : parameterMappings) {
             String property = mapping.getProperty();
             try {
@@ -229,7 +230,7 @@ public final class ParamUtil {
                 if (value instanceof String) {
                     log.debug("Checking object property: {} = {}", property,
                             value);
-                    ParameterEncryptInfo encryptInfo =
+                    EncryptInfo encryptInfo =
                             matchParameterToSqlField(property, (String) value
                                     , sqlAnalysis, tables, parameterMappings);
                     if (encryptInfo != null) {
@@ -241,7 +242,8 @@ public final class ParamUtil {
                     }
                 }
             } catch (Exception e) {
-                throw new DesensitizeException("Failed to get object property" +
+                throw new DataSecurityException("Failed to get object " +
+                        "property" +
                         " value: " + parameterObject + "." + property, e);
             }
         }
@@ -251,16 +253,18 @@ public final class ParamUtil {
     /**
      * Map parameter to SQL field
      */
-    private static ParameterEncryptInfo matchParameterToSqlField(String paramProperty, String paramValue,
-                                                                 List<SqlParam> params, List<SqlTable> tables,
-                                                                 List<ParameterMapping> parameterMappings) {
+    private static EncryptInfo matchParameterToSqlField(String paramProperty,
+                                                        String paramValue,
+                                                        List<SqlParam> params
+            , List<SqlTable> tables,
+                                                        List<ParameterMapping> parameterMappings) {
         int paramIndex = findParameterIndex(paramProperty, parameterMappings);
 
         if (paramIndex >= 0 && paramIndex < params.size()) {
             SqlParam param = params.get(paramIndex);
 
             for (SqlTable table : tables) {
-                ParameterEncryptInfo encryptInfo = FieldMatchUtil
+                EncryptInfo encryptInfo = FieldMatchUtil
                         .createEncryptInfo(table.getName(), param.getColumn()
                                 , paramValue);
                 if (encryptInfo != null) {
@@ -316,7 +320,7 @@ public final class ParamUtil {
             log.debug("Unable to get QueryWrapper SQL segment");
             return null;
         } catch (Exception e) {
-            throw new DesensitizeException("Failed to get QueryWrapper SQL " +
+            throw new DataSecurityException("Failed to get QueryWrapper SQL " +
                     "segment", e);
         }
     }
@@ -339,7 +343,7 @@ public final class ParamUtil {
             }
             return mapping;
         } catch (Exception e) {
-            throw new DesensitizeException("Failed to parse field-parameter " +
+            throw new DataSecurityException("Failed to parse field-parameter " +
                     "mapping", e);
         }
     }
@@ -347,17 +351,17 @@ public final class ParamUtil {
     /**
      * Execute parameter encryption
      */
-    public static void encryptParameters(List<ParameterEncryptInfo> encryptInfos) {
-        List<ParameterRestoreInfo> restoreInfos = new ArrayList<>();
+    public static void encryptParameters(List<EncryptInfo> encryptInfos) {
+        List<RestoreInfo> restoreInfos = new ArrayList<>();
 
-        for (ParameterEncryptInfo encryptInfo : encryptInfos) {
+        for (EncryptInfo encryptInfo : encryptInfos) {
             try {
                 EncryptionAlgo algo =
                         SpringContextUtil.getBean(AbstractEncryptAlgoContainer.class).getAlgo(encryptInfo.getAlgoClass());
                 String encryptedValue =
                         algo.encrypt(encryptInfo.getOriginalValue());
 
-                ParameterRestoreInfo restoreInfo = new ParameterRestoreInfo();
+                RestoreInfo restoreInfo = new RestoreInfo();
                 restoreInfo.setOriginalValue(encryptInfo.getOriginalValue());
                 restoreInfo.setParameterMap(encryptInfo.getParameterMap());
                 restoreInfo.setParameterKey(encryptInfo.getParameterKey());
@@ -395,7 +399,7 @@ public final class ParamUtil {
                         encryptInfo.getOriginalValue(), encryptedValue);
 
             } catch (Exception e) {
-                throw new DesensitizeException("Failed to encrypt parameter: "
+                throw new DataSecurityException("Failed to encrypt parameter: "
                         + encryptInfo.getTableName() + "." + encryptInfo.getFieldName(), e);
             }
         }
@@ -406,7 +410,8 @@ public final class ParamUtil {
     /**
      * Update QueryWrapper parameters
      */
-    private static void updateQueryWrapperParameter(ParameterEncryptInfo encryptInfo, String encryptedValue) {
+    private static void updateQueryWrapperParameter(EncryptInfo encryptInfo,
+                                                    String encryptedValue) {
         try {
             Object wrapper = encryptInfo.getParameterMap().get("ew");
             if (wrapper == null) {
@@ -434,7 +439,7 @@ public final class ParamUtil {
             }
 
         } catch (Exception e) {
-            throw new DesensitizeException("Failed to update QueryWrapper " +
+            throw new DataSecurityException("Failed to update QueryWrapper " +
                     "parameter: " + encryptInfo.getTableName() + "." + encryptInfo.getFieldName(), e);
         }
     }
@@ -461,7 +466,7 @@ public final class ParamUtil {
             log.debug("Unable to get QueryWrapper paramNameValuePairs");
             return null;
         } catch (Exception e) {
-            throw new DesensitizeException("Failed to get QueryWrapper " +
+            throw new DataSecurityException("Failed to get QueryWrapper " +
                     "paramNameValuePairs", e);
         }
     }
@@ -469,7 +474,7 @@ public final class ParamUtil {
     /**
      * Restore original values
      */
-    public static void restoreOriginalValues(List<ParameterRestoreInfo> restoreInfos) {
+    public static void restoreOriginalValues(List<RestoreInfo> restoreInfos) {
         if (restoreInfos == null || restoreInfos.isEmpty()) {
             return;
         }
@@ -477,7 +482,7 @@ public final class ParamUtil {
         log.debug("Starting to restore parameters, total: {}",
                 restoreInfos.size());
 
-        for (ParameterRestoreInfo restoreInfo : restoreInfos) {
+        for (RestoreInfo restoreInfo : restoreInfos) {
             try {
                 if (restoreInfo.isQueryWrapperParam()) {
                     restoreQueryWrapperParameter(restoreInfo);
@@ -505,7 +510,7 @@ public final class ParamUtil {
                 log.debug("Parameter restoration completed: {}",
                         restoreInfo.getOriginalValue());
             } catch (Exception e) {
-                throw new DesensitizeException("Failed to restore parameter",
+                throw new DataSecurityException("Failed to restore parameter",
                         e);
             }
         }
@@ -515,7 +520,7 @@ public final class ParamUtil {
     /**
      * Restore QueryWrapper parameters
      */
-    private static void restoreQueryWrapperParameter(ParameterRestoreInfo restoreInfo) {
+    private static void restoreQueryWrapperParameter(RestoreInfo restoreInfo) {
         try {
             Object wrapper = restoreInfo.getParameterMap().get("ew");
             if (wrapper == null) {
@@ -544,7 +549,7 @@ public final class ParamUtil {
             }
 
         } catch (Exception e) {
-            throw new DesensitizeException("Failed to restore QueryWrapper " +
+            throw new DataSecurityException("Failed to restore QueryWrapper " +
                     "parameter", e);
         }
     }

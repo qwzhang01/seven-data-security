@@ -1,6 +1,6 @@
 package io.github.qwzhang01.dsecurity.kit;
 
-import io.github.qwzhang01.dsecurity.domain.ParameterEncryptInfo;
+import io.github.qwzhang01.dsecurity.domain.EncryptInfo;
 import io.github.qwzhang01.dsecurity.encrypt.container.EncryptFieldTableContainer;
 import io.github.qwzhang01.dsecurity.encrypt.shield.EncryptionAlgo;
 import io.github.qwzhang01.sql.tool.model.SqlParam;
@@ -36,7 +36,8 @@ public final class FieldMatchUtil {
     /**
      * Retrieves the encryption algorithm class for a specific table field.
      *
-     * <p>This method tries multiple naming format variants to match the field:</p>
+     * <p>This method tries multiple naming format variants to match the
+     * field:</p>
      * <ul>
      *   <li>Original field name</li>
      *   <li>camelCase to snake_case conversion</li>
@@ -75,16 +76,16 @@ public final class FieldMatchUtil {
      * @param value     the field value to encrypt
      * @return encryption information object, or null if field is not encrypted
      */
-    public static ParameterEncryptInfo createEncryptInfo(String tableName,
-                                                         String fieldName,
-                                                         String value) {
+    public static EncryptInfo createEncryptInfo(String tableName,
+                                                String fieldName,
+                                                String value) {
         Class<? extends EncryptionAlgo> algoClass = getEncryptAlgo(tableName,
                 fieldName);
         if (algoClass == null) {
             return null;
         }
 
-        ParameterEncryptInfo encryptInfo = new ParameterEncryptInfo();
+        EncryptInfo encryptInfo = new EncryptInfo();
         encryptInfo.setTableName(tableName);
         encryptInfo.setFieldName(fieldName);
         encryptInfo.setOriginalValue(value);
@@ -109,8 +110,9 @@ public final class FieldMatchUtil {
      * @param tables      list of tables in the SQL
      * @return encryption information if match found, null otherwise
      */
-    public static ParameterEncryptInfo matchParameterToTableField(String paramName, String paramValue,
-                                                                  List<SqlParam> sqlAnalysis, List<SqlTable> tables) {
+    public static EncryptInfo matchParameterToTableField(String paramName,
+                                                         String paramValue,
+                                                         List<SqlParam> sqlAnalysis, List<SqlTable> tables) {
         // 清理参数名
         String cleanParamName = StringUtil.cleanParameterName(paramName);
 
@@ -118,10 +120,11 @@ public final class FieldMatchUtil {
         for (SqlTable tableInfo : tables) {
             String tableName = tableInfo.getName();
 
-            ParameterEncryptInfo encryptInfo = createEncryptInfo(tableName,
+            EncryptInfo encryptInfo = createEncryptInfo(tableName,
                     cleanParamName, paramValue);
             if (encryptInfo != null) {
-                log.debug("Direct match found for encrypted field: table[{}] field[{}]", tableName, cleanParamName);
+                log.debug("Direct match found for encrypted field: table[{}] " +
+                        "field[{}]", tableName, cleanParamName);
                 return encryptInfo;
             }
         }
@@ -131,14 +134,16 @@ public final class FieldMatchUtil {
             String columnName = condition.getColumn();
 
             if (isFieldNameMatch(cleanParamName, columnName)) {
-                // Found matching field, check which table contains this encrypted field
+                // Found matching field, check which table contains this
+                // encrypted field
                 for (SqlTable tableInfo : tables) {
                     String tableName = tableInfo.getName();
-                    ParameterEncryptInfo encryptInfo =
+                    EncryptInfo encryptInfo =
                             createEncryptInfo(tableName, columnName,
                                     paramValue);
                     if (encryptInfo != null) {
-                        log.debug("Matched encrypted field via SQL condition: table[{}] field[{}]", tableName,
+                        log.debug("Matched encrypted field via SQL condition:" +
+                                        " table[{}] field[{}]", tableName,
                                 columnName);
                         return encryptInfo;
                     }

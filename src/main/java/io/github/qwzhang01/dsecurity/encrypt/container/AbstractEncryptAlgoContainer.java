@@ -2,7 +2,7 @@ package io.github.qwzhang01.dsecurity.encrypt.container;
 
 import io.github.qwzhang01.dsecurity.encrypt.shield.DefaultEncryptionAlgo;
 import io.github.qwzhang01.dsecurity.encrypt.shield.EncryptionAlgo;
-import io.github.qwzhang01.dsecurity.exception.DesensitizeException;
+import io.github.qwzhang01.dsecurity.exception.DataSecurityException;
 import io.github.qwzhang01.dsecurity.kit.SpringContextUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,8 +79,8 @@ public abstract class AbstractEncryptAlgoContainer {
      *
      * @param clazz the encryption algorithm class
      * @return the encryption algorithm instance
-     * @throws DesensitizeException if algorithm cannot be created and no
-     *                              fallback is available
+     * @throws DataSecurityException if algorithm cannot be created and no
+     *                               fallback is available
      */
     public final EncryptionAlgo getAlgo(Class<? extends EncryptionAlgo> clazz) {
         if (clazz == null) {
@@ -103,8 +103,8 @@ public abstract class AbstractEncryptAlgoContainer {
      *
      * @param clazz the algorithm class to instantiate
      * @return the created algorithm instance
-     * @throws DesensitizeException if creation fails and no fallback is
-     *                              available
+     * @throws DataSecurityException if creation fails and no fallback is
+     *                               available
      */
     private EncryptionAlgo createAlgorithmInstance(Class<?
             extends EncryptionAlgo> clazz) {
@@ -142,7 +142,7 @@ public abstract class AbstractEncryptAlgoContainer {
      * @param clazz the algorithm class that failed to instantiate
      * @param cause the exception that caused the failure
      * @return the fallback algorithm instance
-     * @throws DesensitizeException if fallback also fails
+     * @throws DataSecurityException if fallback also fails
      */
     private EncryptionAlgo handleInstantiationFailure(Class<?
             extends EncryptionAlgo> clazz, Exception cause) {
@@ -153,14 +153,14 @@ public abstract class AbstractEncryptAlgoContainer {
             try {
                 return new DefaultEncryptionAlgo();
             } catch (Exception ex) {
-                throw new DesensitizeException(
+                throw new DataSecurityException(
                         "Failed to create encryption algorithm instance and " +
                                 "fallback also failed", ex);
             }
         }
 
         // If default algorithm itself fails, throw exception
-        throw new DesensitizeException(
+        throw new DataSecurityException(
                 "Failed to create default encryption algorithm instance",
                 cause);
     }

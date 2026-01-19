@@ -14,7 +14,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 
 /**
- * MyBatis interceptor for SQL statement printing in non-production environments.
+ * MyBatis interceptor for SQL statement printing in non-production
+ * environments.
  *
  * <p>This interceptor captures and logs SQL statements with their actual
  * parameter values and execution time. It only operates in non-production

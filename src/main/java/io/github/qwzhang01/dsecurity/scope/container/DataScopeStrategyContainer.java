@@ -1,6 +1,6 @@
 package io.github.qwzhang01.dsecurity.scope.container;
 
-import io.github.qwzhang01.dsecurity.exception.DesensitizeException;
+import io.github.qwzhang01.dsecurity.exception.DataSecurityException;
 import io.github.qwzhang01.dsecurity.kit.SpringContextUtil;
 import io.github.qwzhang01.dsecurity.scope.DataScopeStrategy;
 
@@ -35,7 +35,7 @@ public class DataScopeStrategyContainer {
                 try {
                     scopeStrategy = strategy.getConstructor().newInstance();
                 } catch (Exception e) {
-                    throw new DesensitizeException(e);
+                    throw new DataSecurityException(e);
                 }
             }
             ALGO_CACHE.putIfAbsent(strategy, scopeStrategy);

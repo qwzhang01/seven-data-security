@@ -1,6 +1,6 @@
 package io.github.qwzhang01.dsecurity.encrypt.processor;
 
-import io.github.qwzhang01.dsecurity.domain.ParameterEncryptInfo;
+import io.github.qwzhang01.dsecurity.domain.EncryptInfo;
 import io.github.qwzhang01.dsecurity.encrypt.container.EncryptFieldTableContainer;
 import io.github.qwzhang01.dsecurity.kit.ParamUtil;
 import io.github.qwzhang01.dsecurity.kit.SpringContextUtil;
@@ -56,7 +56,7 @@ public class EncryptProcessor {
      *
      * @param invocation the method invocation containing SQL and parameters
      */
-    public void encryptParameters(Invocation invocation) {
+    public void apply(Invocation invocation) {
         StatementHandler statementHandler =
                 (StatementHandler) invocation.getTarget();
         // 获取 ParameterHandler 中的参数对象
@@ -64,10 +64,10 @@ public class EncryptProcessor {
                 statementHandler.getParameterHandler().getParameterObject();
         BoundSql boundSql = statementHandler.getBoundSql();
 
-        encryptParameters(boundSql, parameterObject);
+        apply(boundSql, parameterObject);
     }
 
-    private void encryptParameters(BoundSql boundSql, Object parameterObject) {
+    private void apply(BoundSql boundSql, Object parameterObject) {
         try {
             EncryptFieldTableContainer container =
                     SpringContextUtil.getBean(EncryptFieldTableContainer.class);
@@ -77,7 +77,8 @@ public class EncryptProcessor {
             }
 
             String originalSql = boundSql.getSql();
-            log.debug("Starting query encryption processing, SQL: {}", originalSql);
+            log.debug("Starting query encryption processing, SQL: {}",
+                    originalSql);
 
             if (boundSql.getParameterObject() == null) {
                 log.debug("Parameter object is null, skipping encryption");
@@ -99,7 +100,7 @@ public class EncryptProcessor {
             }
 
             // 2. Parse parameter object to get parameters that need encryption
-            List<ParameterEncryptInfo> encryptInfos =
+            List<EncryptInfo> encryptInfos =
                     ParamUtil.analyzeParameters(
                             boundSql.getParameterMappings(), param, tables,
                             parameterObject);
@@ -107,7 +108,8 @@ public class EncryptProcessor {
             // 3. Execute parameter encryption
             if (!encryptInfos.isEmpty()) {
                 ParamUtil.encryptParameters(encryptInfos);
-                log.debug("Completed parameter encryption, processed {} parameters", encryptInfos.size());
+                log.debug("Completed parameter encryption, processed {} " +
+                        "parameters", encryptInfos.size());
             }
         } catch (Exception e) {
             log.error("Query parameter encryption processing failed", e);

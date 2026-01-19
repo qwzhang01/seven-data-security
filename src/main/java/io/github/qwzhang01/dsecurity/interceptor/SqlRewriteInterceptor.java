@@ -27,9 +27,13 @@ package io.github.qwzhang01.dsecurity.interceptor;
 
 import io.github.qwzhang01.dsecurity.encrypt.context.SqlRewriteContext;
 import io.github.qwzhang01.dsecurity.encrypt.processor.EncryptProcessor;
+import io.github.qwzhang01.dsecurity.encrypt.processor.SingleSelectProcessor;
 import io.github.qwzhang01.dsecurity.scope.processor.DataScopeProcessor;
 import org.apache.ibatis.executor.statement.StatementHandler;
-import org.apache.ibatis.plugin.*;
+import org.apache.ibatis.plugin.Interceptor;
+import org.apache.ibatis.plugin.Intercepts;
+import org.apache.ibatis.plugin.Invocation;
+import org.apache.ibatis.plugin.Signature;
 import org.apache.ibatis.session.ResultHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,11 +104,11 @@ public class SqlRewriteInterceptor implements Interceptor {
      * @throws Throwable if the operation fails
      */
     private Object handlePreparePhase(Invocation invocation) throws Throwable {
-        // Clear any previous restoration context
         SqlRewriteContext.clear();
 
-        // Apply parameter encryption
-        EncryptProcessor.getInstance().encryptParameters(invocation);
+        EncryptProcessor.getInstance().apply(invocation);
+
+        SingleSelectProcessor.getInstance().apply(invocation);
 
         DataScopeProcessor.getInstance().apply(invocation);
 
@@ -139,11 +143,6 @@ public class SqlRewriteInterceptor implements Interceptor {
         return METHOD_UPDATE.equalsIgnoreCase(methodName)
                 || METHOD_QUERY.equals(methodName)
                 || METHOD_QUERY_CURSOR.equals(methodName);
-    }
-
-    @Override
-    public Object plugin(Object target) {
-        return Plugin.wrap(target, this);
     }
 
     @Override

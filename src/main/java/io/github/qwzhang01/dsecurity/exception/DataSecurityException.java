@@ -27,7 +27,7 @@ package io.github.qwzhang01.dsecurity.exception;
  *
  * @author avinzhang
  */
-public class DesensitizeException extends RuntimeException {
+public class DataSecurityException extends RuntimeException {
 
     /**
      * Constructs a new desensitize exception with the specified detail message.
@@ -35,7 +35,7 @@ public class DesensitizeException extends RuntimeException {
      *
      * @param message the detail message explaining the reason for the exception
      */
-    public DesensitizeException(String message) {
+    public DataSecurityException(String message) {
         super(message);
     }
 
@@ -45,7 +45,7 @@ public class DesensitizeException extends RuntimeException {
      *
      * @param cause the underlying cause of this exception
      */
-    public DesensitizeException(Throwable cause) {
+    public DataSecurityException(Throwable cause) {
         super(cause);
     }
 
@@ -57,7 +57,7 @@ public class DesensitizeException extends RuntimeException {
      * @param message the detail message explaining the reason for the exception
      * @param cause   the underlying cause of this exception
      */
-    public DesensitizeException(String message, Throwable cause) {
+    public DataSecurityException(String message, Throwable cause) {
         super(message, cause);
     }
 }

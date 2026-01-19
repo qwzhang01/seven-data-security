@@ -15,7 +15,7 @@ import java.util.List;
  *     public String join() {
  *         return "LEFT JOIN department d ON t.dept_id = d.id";
  *     }
- *     
+ *
  *     {@code @Override}
  *     public String where() {
  *         return "d.id IN (SELECT dept_id FROM user_dept WHERE user_id = ?)";
@@ -51,7 +51,8 @@ public interface DataScopeStrategy<T> {
     /**
      * Validates and sets effective permission data.
      *
-     * <p>Called before SQL execution to process and validate permission data.</p>
+     * <p>Called before SQL execution to process and validate permission data
+     * .</p>
      *
      * @param validRights list of valid permission data
      */
