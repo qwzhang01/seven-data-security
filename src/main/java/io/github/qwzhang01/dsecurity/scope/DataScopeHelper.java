@@ -151,6 +151,8 @@ public class DataScopeHelper {
          * Excluded rights (whitelist for INSERT/UPDATE/DELETE operations)
          */
         private List<T> withoutRights;
+
+        private RuntimeException scopeException;
         /**
          * Data scope query strategy
          */
@@ -234,6 +236,15 @@ public class DataScopeHelper {
             return this;
         }
 
+        public RuntimeException getScopeException() {
+            return scopeException;
+        }
+
+        public Context<T> setScopeException(RuntimeException scopeException) {
+            this.scopeException = scopeException;
+            return this;
+        }
+
         public <R> R execute(Callable<R> function) {
             DataScopeStrategyContainer container =
                     SpringContextUtil.getBean(DataScopeStrategyContainer.class);
@@ -245,8 +256,17 @@ public class DataScopeHelper {
             typedObj.validDs(this.validRights, this.withoutRights);
 
             try {
-                return function.call();
+                R call = function.call();
+
+                if (call == null && this.scopeException != null) {
+                    throw this.scopeException;
+                }
+
+                return call;
             } catch (Exception e) {
+                if (e.equals(this.scopeException)) {
+                    throw this.scopeException;
+                }
                 throw new MybatisPlusException(e);
             } finally {
                 clear();
