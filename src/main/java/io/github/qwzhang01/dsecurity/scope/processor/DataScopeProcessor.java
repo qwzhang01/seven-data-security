@@ -84,11 +84,15 @@ public class DataScopeProcessor {
         String where = obj.where();
 
         if (!StringUtil.isEmpty(join) && !StringUtil.isEmpty(where)) {
+            log.info("data scope join:{}", join);
+            log.info("data scope where:{}", where);
             originalSql = ParserHelper.addJoinAndWhere(originalSql.trim(),
                     join.trim(), where.trim());
         } else if (!StringUtil.isEmpty(join)) {
+            log.info("data scope join:{}",join);
             originalSql = ParserHelper.addJoin(originalSql.trim(), join.trim());
         } else if (!StringUtil.isEmpty(where)) {
+            log.info("data scope join:{}",where);
             originalSql = ParserHelper.addWhere(originalSql.trim(),
                     where.trim());
         }

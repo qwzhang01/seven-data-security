@@ -5,6 +5,8 @@
 [![Java Version](https://img.shields.io/badge/Java-17%2B-green.svg)](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.1.5-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![MyBatis-Plus](https://img.shields.io/badge/MyBatis--Plus-3.5.11-blue.svg)](https://baomidou.com/)
+[![CI](https://github.com/qwzhang01/seven-data-security/actions/workflows/ci.yml/badge.svg)](https://github.com/qwzhang01/seven-data-security/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/qwzhang01/seven-data-security/branch/main/graph/badge.svg)](https://codecov.io/gh/qwzhang01/seven-data-security)
 
 [English Documentation](README.md)
 
