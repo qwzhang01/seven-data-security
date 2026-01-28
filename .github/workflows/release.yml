@@ -30,10 +30,27 @@ jobs:
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
       
       - name: Build project
-        run: mvn clean package -DskipTests -B
+        run: mvn clean package source:jar javadoc:jar -DskipTests -B
       
       - name: List built artifacts
-        run: ls -la target/*.jar || echo "No jars found"
+        id: artifacts
+        run: |
+          echo "=== All JARs in target ===" 
+          ls -la target/*.jar 2>/dev/null || echo "No jars found"
+          
+          # Find the main jar (without classifier)
+          MAIN_JAR=$(find target -maxdepth 1 -name "seven-data-security-*.jar" ! -name "*-sources.jar" ! -name "*-javadoc.jar" | head -1)
+          SOURCES_JAR=$(find target -maxdepth 1 -name "*-sources.jar" | head -1)
+          JAVADOC_JAR=$(find target -maxdepth 1 -name "*-javadoc.jar" | head -1)
+          
+          echo "Main JAR: $MAIN_JAR"
+          echo "Sources JAR: $SOURCES_JAR"
+          echo "Javadoc JAR: $JAVADOC_JAR"
+          
+          # Set outputs
+          echo "main_jar=$MAIN_JAR" >> $GITHUB_OUTPUT
+          echo "sources_jar=$SOURCES_JAR" >> $GITHUB_OUTPUT
+          echo "javadoc_jar=$JAVADOC_JAR" >> $GITHUB_OUTPUT
       
       - name: Generate changelog from commits
         id: changelog
@@ -41,41 +58,52 @@ jobs:
           # Get previous tag
           PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
           
+          echo "## What's Changed in v${{ steps.version.outputs.VERSION }}" > changelog.md
+          echo "" >> changelog.md
+          
           if [ -z "$PREV_TAG" ]; then
-            # First release, get all commits
-            COMMITS=$(git log --pretty=format:"- %s (%h)" --no-merges)
+            echo "### Initial Release" >> changelog.md
+            git log --pretty=format:"- %s (%h)" --no-merges -20 >> changelog.md
           else
-            # Get commits since last tag
-            COMMITS=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s (%h)" --no-merges)
+            git log ${PREV_TAG}..HEAD --pretty=format:"- %s (%h)" --no-merges >> changelog.md
+            echo "" >> changelog.md
+            echo "" >> changelog.md
+            echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREV_TAG}...v${{ steps.version.outputs.VERSION }}" >> changelog.md
           fi
           
-          # Write to file for multi-line output
-          echo "## What's Changed" > changelog.md
           echo "" >> changelog.md
-          echo "$COMMITS" >> changelog.md
-          echo "" >> changelog.md
-          echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREV_TAG}...v${{ steps.version.outputs.VERSION }}" >> changelog.md
+          echo "---" >> changelog.md
+          echo "### 📦 Installation" >> changelog.md
+          echo '```xml' >> changelog.md
+          echo '<dependency>' >> changelog.md
+          echo '    <groupId>io.github.qwzhang01</groupId>' >> changelog.md
+          echo '    <artifactId>seven-data-security</artifactId>' >> changelog.md
+          echo '    <version>${{ steps.version.outputs.VERSION }}</version>' >> changelog.md
+          echo '</dependency>' >> changelog.md
+          echo '```' >> changelog.md
           
           cat changelog.md
       
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          name: v${{ steps.version.outputs.VERSION }}
+          tag_name: ${{ github.ref_name }}
           body_path: changelog.md
           files: |
-            target/seven-data-security-*.jar
-            target/seven-data-security-*-sources.jar
-            target/seven-data-security-*-javadoc.jar
+            ${{ steps.artifacts.outputs.main_jar }}
+            ${{ steps.artifacts.outputs.sources_jar }}
+            ${{ steps.artifacts.outputs.javadoc_jar }}
+          fail_on_unmatched_files: false
           draft: false
-          prerelease: false
-          generate_release_notes: true
+          prerelease: ${{ contains(github.ref, '-beta') || contains(github.ref, '-alpha') || contains(github.ref, '-rc') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   publish-maven:
     runs-on: ubuntu-latest
     needs: release
-    if: ${{ !contains(github.ref, '-beta') && !contains(github.ref, '-alpha') }}
+    if: ${{ !contains(github.ref, '-beta') && !contains(github.ref, '-alpha') && !contains(github.ref, '-rc') }}
     
     steps:
       - name: Checkout code
