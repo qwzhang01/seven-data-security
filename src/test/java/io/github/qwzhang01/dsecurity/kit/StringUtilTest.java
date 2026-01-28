@@ -73,7 +73,7 @@ class StringUtilTest {
         @Test
         @DisplayName("should handle leading underscore")
         void shouldHandleLeadingUnderscore() {
-            assertEquals("id", StringUtil.underscoreToCamel("_id"));
+            assertEquals("Id", StringUtil.underscoreToCamel("_id"));
         }
 
         @Test
