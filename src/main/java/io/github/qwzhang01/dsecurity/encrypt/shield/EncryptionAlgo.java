@@ -60,4 +60,15 @@ public interface EncryptionAlgo {
      *                          algorithm issues
      */
     String decrypt(String value);
+
+    /**
+     * 加解密错误，是否抛异常
+     * 默认不抛异常
+     * 如果需要抛异常，自定义加密算法的时候处理
+     *
+     * @return true if cryptoThrowable, false otherwise
+     */
+    default boolean cryptoThrowable() {
+        return false;
+    }
 }

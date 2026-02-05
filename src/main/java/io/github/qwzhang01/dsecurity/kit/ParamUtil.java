@@ -357,9 +357,20 @@ public final class ParamUtil {
         for (EncryptInfo encryptInfo : encryptInfos) {
             try {
                 EncryptionAlgo algo =
-                        SpringContextUtil.getBean(AbstractEncryptAlgoContainer.class).getAlgo(encryptInfo.getAlgoClass());
-                String encryptedValue =
-                        algo.encrypt(encryptInfo.getOriginalValue());
+                        SpringContextUtil.getBean(AbstractEncryptAlgoContainer.class)
+                                .getAlgo(encryptInfo.getAlgoClass());
+
+                String encryptedValue = encryptInfo.getOriginalValue();
+                try {
+                    encryptedValue =
+                            algo.encrypt(encryptInfo.getOriginalValue());
+                } catch (Exception e) {
+                    if (algo.cryptoThrowable()) {
+                        throw e;
+                    }
+                    log.error("Failed to encrypt value: {}",
+                            encryptInfo.getOriginalValue(), e);
+                }
 
                 RestoreInfo restoreInfo = new RestoreInfo();
                 restoreInfo.setOriginalValue(encryptInfo.getOriginalValue());

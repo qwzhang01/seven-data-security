@@ -28,11 +28,14 @@ package io.github.qwzhang01.dsecurity.encrypt.type.handler;
 
 import io.github.qwzhang01.dsecurity.domain.Encrypt;
 import io.github.qwzhang01.dsecurity.encrypt.container.AbstractEncryptAlgoContainer;
+import io.github.qwzhang01.dsecurity.encrypt.shield.EncryptionAlgo;
 import io.github.qwzhang01.dsecurity.kit.SpringContextUtil;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.MappedJdbcTypes;
 import org.apache.ibatis.type.MappedTypes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
@@ -50,6 +53,8 @@ import java.sql.SQLException;
 @MappedJdbcTypes(JdbcType.VARCHAR)
 @MappedTypes(Encrypt.class)
 public class EncryptTypeHandler extends BaseTypeHandler<Encrypt> {
+    private static final Logger log =
+            LoggerFactory.getLogger(EncryptTypeHandler.class);
 
     /**
      * Set parameter
@@ -63,7 +68,19 @@ public class EncryptTypeHandler extends BaseTypeHandler<Encrypt> {
         }
         AbstractEncryptAlgoContainer container =
                 SpringContextUtil.getBean(AbstractEncryptAlgoContainer.class);
-        String encrypt = container.getAlgo().encrypt(parameter.getValue());
+        EncryptionAlgo algo = container.getAlgo();
+
+        String encrypt = parameter.getValue();
+
+        try {
+            encrypt = algo.encrypt(parameter.getValue());
+        } catch (Exception e) {
+            if (algo.cryptoThrowable()) {
+                throw e;
+            }
+            log.error("Failed to encrypt value: {}", parameter.getValue(), e);
+        }
+
         ps.setString(i, encrypt);
     }
 
