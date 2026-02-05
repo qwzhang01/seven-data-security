@@ -113,6 +113,7 @@ public class EncryptProcessor {
             }
         } catch (Exception e) {
             log.error("Query parameter encryption processing failed", e);
+            throw e;
         }
     }
 
