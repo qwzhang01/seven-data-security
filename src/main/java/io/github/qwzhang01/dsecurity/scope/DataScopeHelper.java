@@ -7,6 +7,7 @@ import io.github.qwzhang01.dsecurity.kit.SpringContextUtil;
 import io.github.qwzhang01.dsecurity.scope.container.DataScopeStrategyContainer;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -64,6 +65,14 @@ public class DataScopeHelper {
 
         context.setStrategy(strategy);
         return context;
+    }
+
+    public static List<String> getRightItems() {
+        Context<?> context = CONTEXT.get();
+        if (context == null) {
+            return Collections.emptyList();
+        }
+        return context.getRightItems();
     }
 
     public static <T> List<T> getSearchRight() {
@@ -141,6 +150,10 @@ public class DataScopeHelper {
          */
         private Boolean dataScopeFlag;
         /**
+         * 权限项或角色
+         */
+        private List<String> rightItems;
+        /**
          * Search conditions (used as data scope filter)
          */
         private List<T> searchRight;
@@ -158,6 +171,31 @@ public class DataScopeHelper {
          * Data scope query strategy
          */
         private Class<? extends DataScopeStrategy<T>> strategy;
+
+        public List<String> getRightItems() {
+            return rightItems;
+        }
+
+        public Context<T> setRightItems(List<String> rightItems) {
+            this.rightItems = rightItems;
+            return this;
+        }
+
+        public Context<T> setRightItems(String rightItems) {
+            if (this.rightItems == null || this.rightItems.isEmpty()) {
+                this.rightItems = new ArrayList<>();
+            }
+            this.rightItems.add(rightItems);
+            return this;
+        }
+
+        public Context<T> setRightItems(String... rightItems) {
+            if (this.rightItems == null || this.rightItems.isEmpty()) {
+                this.rightItems = new ArrayList<>();
+            }
+            Collections.addAll(this.rightItems, rightItems);
+            return this;
+        }
 
         public List<T> getSearchRight() {
             return searchRight;

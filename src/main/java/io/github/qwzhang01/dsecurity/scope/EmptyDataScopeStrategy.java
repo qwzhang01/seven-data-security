@@ -18,7 +18,7 @@ public class EmptyDataScopeStrategy<T> implements DataScopeStrategy<T> {
     }
 
     @Override
-    public String where() {
+    public String where(List<String> rightItems) {
         return "";
     }
 

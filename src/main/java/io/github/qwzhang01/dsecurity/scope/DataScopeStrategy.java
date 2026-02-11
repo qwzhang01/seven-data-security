@@ -46,7 +46,7 @@ public interface DataScopeStrategy<T> {
      * @return WHERE condition string, or empty string if no additional
      * condition is needed
      */
-    String where();
+    String where(List<String> rightItems);
 
     /**
      * Validates and sets effective permission data.

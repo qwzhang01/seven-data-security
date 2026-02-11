@@ -81,7 +81,7 @@ public class DataScopeProcessor {
         DataScopeStrategy<?> obj = container.getStrategy(strategy);
 
         String join = obj.join();
-        String where = obj.where();
+        String where = obj.where(DataScopeHelper.getRightItems());
 
         if (!StringUtil.isEmpty(join) && !StringUtil.isEmpty(where)) {
             log.info("data scope join:{}", join);
@@ -89,10 +89,10 @@ public class DataScopeProcessor {
             originalSql = ParserHelper.addJoinAndWhere(originalSql.trim(),
                     join.trim(), where.trim());
         } else if (!StringUtil.isEmpty(join)) {
-            log.info("data scope join:{}",join);
+            log.info("data scope join:{}", join);
             originalSql = ParserHelper.addJoin(originalSql.trim(), join.trim());
         } else if (!StringUtil.isEmpty(where)) {
-            log.info("data scope join:{}",where);
+            log.info("data scope join:{}", where);
             originalSql = ParserHelper.addWhere(originalSql.trim(),
                     where.trim());
         }
