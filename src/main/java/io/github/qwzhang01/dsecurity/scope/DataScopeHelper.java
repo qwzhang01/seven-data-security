@@ -70,7 +70,10 @@ public class DataScopeHelper {
     public static List<String> getRightItems() {
         Context<?> context = CONTEXT.get();
         if (context == null) {
-            return Collections.emptyList();
+            context = (Context<?>) CONTEXT_CACHE.get();
+            if (context == null) {
+                return Collections.emptyList();
+            }
         }
         return context.getRightItems();
     }
